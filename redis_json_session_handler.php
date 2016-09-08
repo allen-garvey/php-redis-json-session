@@ -1,13 +1,7 @@
 <?php
 class RedisJsonSessionHandler implements SessionHandlerInterface{
     private $savePath;
-
-
-    protected function getRedisConnection(){
-        $redis = new Redis();
-        $redis->connect('127.0.0.1', 6379);
-        return $redis;
-    }
+    private $redis;
 
     public static function sessionSerializeArray($data) : string{
         if(empty($data)){
@@ -40,6 +34,12 @@ class RedisJsonSessionHandler implements SessionHandlerInterface{
         return $return_data;
     }
 
+    protected function getRedisConnection(){
+        $redis = new Redis();
+        $redis->connect('127.0.0.1', 6379);
+        return $redis;
+    }
+
     protected function jsonEncodeSessionData($sessionData){
         $rawData = self::unserializeSessionData($sessionData);
         $jsonData = json_encode($rawData, JSON_FORCE_OBJECT);
@@ -53,24 +53,23 @@ class RedisJsonSessionHandler implements SessionHandlerInterface{
 
     public function open($savePath, $sessionName){
         $this->savePath = $savePath;
+        $this->redis = $this->getRedisConnection();
         return true;
     }
 
     //Any teardown work that needs to be done on session close
     public function close(){
+        $this->redis->close();
         return true;
     }
 
     //Return session serialized session data
     public function read($id){
-        $redis = $this->getRedisConnection();
-        $rawData = $redis->get($id);
+        $rawData = $this->redis->get($id);
         if($rawData === false){
-            $redis->close();
             return '';
         }
         $encodedData = $this->sessionEncodeJsonData($rawData);
-        $redis->close();
         return $encodedData;
     }
 
@@ -79,18 +78,13 @@ class RedisJsonSessionHandler implements SessionHandlerInterface{
     public function write($id, $data){
         $maxlifetime = ini_get("session.gc_maxlifetime");
         $jsonData = $this->jsonEncodeSessionData($data);
-        $redis = $this->getRedisConnection();
-        $redis->setEx($id, $maxlifetime, $jsonData);
-        $redis->close();
-
+        $this->redis->setEx($id, $maxlifetime, $jsonData);
         return true;
     }
 
     //delete session data
     public function destroy($id){
-        $redis = $this->getRedisConnection();
-        $redis->delete($id);
-        $redis->close();
+        $this->redis->delete($id);
 
         return true;
     }
