@@ -1,7 +1,17 @@
 <?php
 class RedisJsonSessionHandler implements SessionHandlerInterface{
-    private $savePath;
-    private $redis;
+    const DEFAULT_REDIS_HOST = '127.0.0.1';
+    const DEFAULT_REDIS_PORT = 6379;
+    
+    protected $savePath;
+    protected $redis;
+    protected $redisPort;
+    protected $redisHost;
+
+    function __construct(string $host=null, int $port=null){
+        $this->redisHost = !is_null($host) ? $host : self::DEFAULT_REDIS_HOST;
+        $this->redisPort = !is_null($port) ? $port : self::DEFAULT_REDIS_PORT;
+    }
 
     public static function sessionSerializeArray($data) : string{
         if(empty($data)){
@@ -36,7 +46,7 @@ class RedisJsonSessionHandler implements SessionHandlerInterface{
 
     protected function getRedisConnection(){
         $redis = new Redis();
-        $redis->connect('127.0.0.1', 6379);
+        $redis->connect($this->redisHost, $this->redisPort);
         return $redis;
     }
 
