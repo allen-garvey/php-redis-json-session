@@ -3,14 +3,41 @@ class RedisJsonSessionHandler implements SessionHandlerInterface{
     const DEFAULT_REDIS_HOST = '127.0.0.1';
     const DEFAULT_REDIS_PORT = 6379;
     
-    protected $savePath;
-    protected $redis;
-    protected $redisPort;
-    protected $redisHost;
+    protected $redis; //instance Redis connection
+    protected $redisConnectionParams = null; //associative array with string $host and optional int $port
 
     function __construct(string $host=null, int $port=null){
-        $this->redisHost = !is_null($host) ? $host : self::DEFAULT_REDIS_HOST;
-        $this->redisPort = !is_null($port) ? $port : self::DEFAULT_REDIS_PORT;
+        $this->redisConnectionParams = self::bundleConnectionParams($host, $port);
+    }
+
+    //bundles parsed host and port into associative array
+    public static function bundleConnectionParams(string $host=null, int $port=null) : array{
+        if(empty($host)){
+            return array('host' => self::DEFAULT_REDIS_HOST, 'port' => self:: DEFAULT_REDIS_PORT);
+        }
+        //socket
+        if(preg_match('|^unix:///.+\.sock$|', $host)){
+            return array('host' => $host);
+        }
+        //check for tcp
+        if(!preg_match('|^tcp://.+|', $host)){
+            throw new Exception(get_class($this).' php.ini session.save_path must be a valid unix socket or tcp url');
+        }
+        $ret = array('host' => $host, 'port' => self::DEFAULT_REDIS_PORT);
+        if(!empty($port)){
+            $ret['port'] = $port;
+        }
+        return $ret;
+    }
+
+    public static function extractConnectionParamsFromSavePath($savePath) : array {
+        $split = explode(':', $savePath);
+        if(count($split) === 1){
+            return self:: bundleConnectionParams($split[0]);
+        }
+        else{
+            return self:: bundleConnectionParams($split[0], (int) $split[1]);
+        }
     }
 
     public static function sessionSerializeArray($data) : string{
@@ -44,26 +71,37 @@ class RedisJsonSessionHandler implements SessionHandlerInterface{
         return $return_data;
     }
 
-    protected function getRedisConnection(){
+    public static function getRedisConnection(array $connectionParams){
         $redis = new Redis();
-        $redis->connect($this->redisHost, $this->redisPort);
+        if(!array_key_exists('host', $connectionParams)){
+            throw new Exception(get_class($this).' host not given for Redis connection');
+        }
+        if(array_key_exists('port', $connectionParams)){
+            $redis->connect($connectionParams['host'], $connectionParams['port']);
+        }
+        else{
+            $redis->connect($connectionParams['host']);
+        }
         return $redis;
     }
 
-    protected function jsonEncodeSessionData($sessionData){
+    public static function jsonEncodeSessionData($sessionData){
         $rawData = self::unserializeSessionData($sessionData);
         $jsonData = json_encode($rawData, JSON_FORCE_OBJECT);
         return $jsonData;
     }
 
-    protected function sessionEncodeJsonData($jsonData){
+    public static function sessionEncodeJsonData($jsonData){
         $decodedData = json_decode($jsonData);
         return self::sessionSerializeArray($decodedData);
     }
 
     public function open($savePath, $sessionName){
-        $this->savePath = $savePath;
-        $this->redis = $this->getRedisConnection();
+        //check to see if connection params overridden by constructor
+        if(!is_null($this->redisConnectionParams)){
+            $this->redisConnectionParams = self::extractConnectionParamsFromSavePath($savePath);
+        }
+        $this->redis = self::getRedisConnection($this->redisConnectionParams);
         return true;
     }
 
@@ -79,7 +117,7 @@ class RedisJsonSessionHandler implements SessionHandlerInterface{
         if($rawData === false){
             return '';
         }
-        $encodedData = $this->sessionEncodeJsonData($rawData);
+        $encodedData = self::sessionEncodeJsonData($rawData);
         return $encodedData;
     }
 
@@ -87,7 +125,7 @@ class RedisJsonSessionHandler implements SessionHandlerInterface{
     //session data is in session serialized format
     public function write($id, $data){
         $maxlifetime = ini_get("session.gc_maxlifetime");
-        $jsonData = $this->jsonEncodeSessionData($data);
+        $jsonData = self::jsonEncodeSessionData($data);
         $this->redis->setEx($id, $maxlifetime, $jsonData);
         return true;
     }
