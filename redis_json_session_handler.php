@@ -10,6 +10,10 @@ class RedisJsonSessionHandler implements SessionHandlerInterface{
         $this->redisConnectionParams = self::bundleConnectionParams($host, $port);
     }
 
+    /**
+    * Redis Connection Functions
+    */
+
     //bundles parsed host and port into associative array
     public static function bundleConnectionParams(string $host=null, int $port=null) : array{
         if(empty($host)){
@@ -39,6 +43,24 @@ class RedisJsonSessionHandler implements SessionHandlerInterface{
             return self:: bundleConnectionParams($split[0], (int) $split[1]);
         }
     }
+
+    public static function getRedisConnection(array $connectionParams){
+        $redis = new Redis();
+        if(!array_key_exists('host', $connectionParams)){
+            throw new Exception(get_class($this).' host not given for Redis connection');
+        }
+        if(array_key_exists('port', $connectionParams)){
+            $redis->connect($connectionParams['host'], $connectionParams['port']);
+        }
+        else{
+            $redis->connect($connectionParams['host']);
+        }
+        return $redis;
+    }
+
+    /**
+    * Serialize and deserialize session from JSON functions
+    */
 
     public static function sessionSerializeArray($data) : string{
         if(empty($data)){
@@ -71,20 +93,6 @@ class RedisJsonSessionHandler implements SessionHandlerInterface{
         return $return_data;
     }
 
-    public static function getRedisConnection(array $connectionParams){
-        $redis = new Redis();
-        if(!array_key_exists('host', $connectionParams)){
-            throw new Exception(get_class($this).' host not given for Redis connection');
-        }
-        if(array_key_exists('port', $connectionParams)){
-            $redis->connect($connectionParams['host'], $connectionParams['port']);
-        }
-        else{
-            $redis->connect($connectionParams['host']);
-        }
-        return $redis;
-    }
-
     public static function jsonEncodeSessionData($sessionData){
         $rawData = self::unserializeSessionData($sessionData);
         $jsonData = json_encode($rawData, JSON_FORCE_OBJECT);
@@ -95,6 +103,10 @@ class RedisJsonSessionHandler implements SessionHandlerInterface{
         $decodedData = json_decode($jsonData);
         return self::sessionSerializeArray($decodedData);
     }
+
+    /**
+    * SessionHandlerInterface Functions
+    */
 
     public function open($savePath, $sessionName){
         //check to see if connection params overridden by constructor
