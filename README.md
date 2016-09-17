@@ -9,11 +9,16 @@ Save your PHP sessions in Redis formatted as JSON, so that you can share your se
 * Redis
 * [PHP Redis extension](https://github.com/phpredis/phpredis)
 * php.ini value `session.serialize_handler` must be `php` (this is the default)
+* PHPUnit 5.5.4 (for testing only)
 
 ## Getting Started
 
 * See `example.php` for an example of how to setup the handler
 * php.ini value `session.gc_maxlifetime` is used to set session key expiration dates in Redis
+
+## Running Tests
+
+Run the unit tests by running `phpunit --bootstrap lib/redis_json_session_handler.php tests` while in the project directory if phpunit is installed on your path, otherwise through `php /path/to/phpunit.phar --bootstrap lib/redis_json_session_handler.php tests`.
 
 ## Caveats
 
