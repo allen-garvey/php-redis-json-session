@@ -10,9 +10,9 @@ class RedisJsonSessionHandler implements SessionHandlerInterface{
         $this->redisConnectionParams = self::bundleConnectionParams($host, $port);
     }
 
-    /**
+    /***********************************************************
     * Redis Connection Functions
-    */
+    ************************************************************/
 
     //bundles parsed host and port into associative array
     public static function bundleConnectionParams(string $host=null, int $port=null) : array{
@@ -25,7 +25,7 @@ class RedisJsonSessionHandler implements SessionHandlerInterface{
         }
         //check for tcp
         if(!preg_match('|^tcp://.+|', $host)){
-            throw new Exception(get_class($this).' php.ini session.save_path must be a valid unix socket or tcp url');
+            throw new BadMethodCallException(get_called_class().' php.ini session.save_path must be a valid unix socket or tcp url');
         }
         $ret = array('host' => $host, 'port' => self::DEFAULT_REDIS_PORT);
         if(!empty($port)){
@@ -47,7 +47,7 @@ class RedisJsonSessionHandler implements SessionHandlerInterface{
     public static function getRedisConnection(array $connectionParams){
         $redis = new Redis();
         if(!array_key_exists('host', $connectionParams)){
-            throw new Exception(get_class($this).' host not given for Redis connection');
+            throw new BadMethodCallException(get_called_class().' host not given for Redis connection');
         }
         if(array_key_exists('port', $connectionParams)){
             $redis->connect($connectionParams['host'], $connectionParams['port']);
@@ -58,10 +58,13 @@ class RedisJsonSessionHandler implements SessionHandlerInterface{
         return $redis;
     }
 
-    /**
+    /***********************************************************
     * Serialize and deserialize session from JSON functions
-    */
+    ************************************************************/
 
+    /**
+    * Encodes an array into session serialized format string
+    */
     public static function sessionSerializeArray($data) : string{
         if(empty($data)){
             return '';
@@ -74,7 +77,11 @@ class RedisJsonSessionHandler implements SessionHandlerInterface{
         return $ret;
     }
 
-    //adapted from http://us.php.net/session_decode
+    /**
+    * Decodes session serialized string (session.serialize_handler = php_serialize format) 
+    * into associative array
+    * adapted from http://us.php.net/session_decode
+    */
     public static function unserializeSessionData($session_data) : array{
         $return_data = array();
         $offset = 0;
@@ -104,9 +111,9 @@ class RedisJsonSessionHandler implements SessionHandlerInterface{
         return self::sessionSerializeArray($decodedData);
     }
 
-    /**
+    /***********************************************************
     * SessionHandlerInterface Functions
-    */
+    ************************************************************/
 
     public function open($savePath, $sessionName){
         //check to see if connection params overridden by constructor
