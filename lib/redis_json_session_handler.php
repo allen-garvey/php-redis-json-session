@@ -65,7 +65,7 @@ class RedisJsonSessionHandler implements SessionHandlerInterface{
     /**
     * Encodes an array into session serialized format string
     */
-    public static function sessionSerializeArray($data) : string{
+    public static function sessionSerializeArray(array $data=null) : string{
         if(empty($data)){
             return '';
         }
@@ -82,7 +82,7 @@ class RedisJsonSessionHandler implements SessionHandlerInterface{
     * into associative array
     * adapted from http://us.php.net/session_decode
     */
-    public static function unserializeSessionData($session_data) : array{
+    public static function unserializeSessionData(string $session_data=null) : array{
         $return_data = array();
         $offset = 0;
         while ($offset < strlen($session_data)) {
@@ -100,13 +100,13 @@ class RedisJsonSessionHandler implements SessionHandlerInterface{
         return $return_data;
     }
 
-    public static function jsonEncodeSessionData($sessionData){
+    public static function jsonEncodeSessionData(string $sessionData=null){
         $rawData = self::unserializeSessionData($sessionData);
         $jsonData = json_encode($rawData, JSON_FORCE_OBJECT);
         return $jsonData;
     }
 
-    public static function sessionEncodeJsonData($jsonData){
+    public static function sessionEncodeJsonData(array $jsonData=null){
         $decodedData = json_decode($jsonData);
         return self::sessionSerializeArray($decodedData);
     }
