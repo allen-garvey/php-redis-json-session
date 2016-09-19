@@ -18,7 +18,7 @@ Save your PHP sessions in Redis formatted as JSON, so that you can share your se
 
 ## Running Tests
 
-Run the unit tests by running `phpunit --bootstrap lib/redis_json_session_handler.php tests` while in the project directory if phpunit is installed on your path, otherwise through `php /path/to/phpunit.phar --bootstrap lib/redis_json_session_handler.php tests`.
+Assuming phpunit is installed and in your `PATH`, you can run tests by making `run_tests.bash` executable by typing `chmod +x run_tests.bash` and running tests by typing `./run_tests.bash`.
 
 ## Caveats
 

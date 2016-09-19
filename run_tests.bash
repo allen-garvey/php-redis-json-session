@@ -1,0 +1,1 @@
+phpunit --bootstrap lib/redis_json_session_handler.php tests
