@@ -11,6 +11,13 @@ class RedisJsonSessionHandler implements SessionHandlerInterface{
     }
 
     /***********************************************************
+    * Getters and Setters
+    ************************************************************/
+    public function getRedisConnectionParams() : array{
+        return $this->redisConnectionParams;
+    }
+
+    /***********************************************************
     * Redis Connection Functions
     ************************************************************/
 
