@@ -1,1 +1,1 @@
-phpunit --bootstrap lib/redis_json_session_handler.php tests
+phpunit --bootstrap lib/redis_json_session_handler.php tests --colors=auto --report-useless-tests
