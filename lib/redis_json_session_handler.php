@@ -124,7 +124,7 @@ class RedisJsonSessionHandler implements SessionHandlerInterface{
 
     public function open($savePath, $sessionName){
         //check to see if connection params overridden by constructor
-        if(!is_null($this->redisConnectionParams)){
+        if(is_null($this->redisConnectionParams)){
             $this->redisConnectionParams = self::extractConnectionParamsFromSavePath($savePath);
         }
         $this->redis = self::getRedisConnection($this->redisConnectionParams);
