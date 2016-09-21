@@ -41,13 +41,20 @@ class RedisJsonSessionHandler implements SessionHandlerInterface{
         return $ret;
     }
 
-    public static function extractConnectionParamsFromSavePath($savePath) : array {
+    public static function extractConnectionParamsFromSavePath(string $savePath=null) : array {
+        if(is_null($savePath)){
+            return self:: bundleConnectionParams($savePath);
+        }
+        //there is : between protocol and between port
         $split = explode(':', $savePath);
-        if(count($split) === 1){
-            return self:: bundleConnectionParams($split[0]);
+        if(count($split) === 2){
+            return self:: bundleConnectionParams($savePath);
+        }
+        else if(count($split) === 3){
+            return self:: bundleConnectionParams(preg_replace('/:\\d+.*$/', '', $savePath), (int) $split[2]);
         }
         else{
-            return self:: bundleConnectionParams($split[0], (int) $split[1]);
+             throw new BadMethodCallException(get_called_class().' php.ini session.save_path must be a valid unix socket or tcp url');
         }
     }
 
