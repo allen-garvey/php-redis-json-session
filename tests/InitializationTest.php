@@ -38,6 +38,28 @@ class InitializationTest extends TestCase{
 		$this->assertEquals($expectedParams, $connectionParams);
 	}
 
+	public function testExtractConnectionParamsFromSavePath(){
+		//test tcp with default port
+		$savePath = 'tcp://196.168.1.1';
+		$connectionParams = RedisJsonSessionHandler::extractConnectionParamsFromSavePath($savePath);
+		$expectedParams = ['host' => 'tcp://196.168.1.1', 'port' => 6379];
+		$this->assertEquals($expectedParams, $connectionParams);
+
+		//test tcp with custom port
+		$savePath = 'tcp://196.168.1.1:1234';
+		$connectionParams = RedisJsonSessionHandler::extractConnectionParamsFromSavePath($savePath);
+		$expectedParams = ['host' => 'tcp://196.168.1.1', 'port' => 1234];
+		$this->assertEquals($expectedParams, $connectionParams);
+
+		//test unix socket
+		$savePath = 'unix:///var/run/redis/redis.sock';
+		$connectionParams = RedisJsonSessionHandler::extractConnectionParamsFromSavePath($savePath);
+		$expectedParams = ['host' => 'unix:///var/run/redis/redis.sock'];
+		$this->assertEquals($expectedParams, $connectionParams);
+
+
+	}
+
 
 
 }
