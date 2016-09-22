@@ -12,8 +12,11 @@ class JsonSerializationTest extends TestCase{
 		$this->assertEquals($serializedArray, $sessionSerializedArray);
 	}
 
-	public function testSessionSerializeEmpty(){
+	public function testSessionSerializeEmpty1(){
 		$this->assertEquals('', RedisJsonSessionHandler::sessionSerializeArray(null));
+	}
+
+	public function testSessionSerializeEmpty2(){
 		$this->assertEquals('', RedisJsonSessionHandler::sessionSerializeArray([]));
 	}
 
@@ -25,9 +28,16 @@ class JsonSerializationTest extends TestCase{
 		$this->assertEquals($testArray, $sessionUnserializedArray);
 	}
 
-	public function unserializeEmptySessionDataToArray(){
+	public function unserializeEmptySessionDataToArray1(){
 		$this->assertEquals([], RedisJsonSessionHandler::unserializeSessionData(null));
+	}
+
+	public function unserializeEmptySessionDataToArray2(){
 		$this->assertEquals([], RedisJsonSessionHandler::unserializeSessionData(''));
 	}
 	
 }
+
+
+
+
