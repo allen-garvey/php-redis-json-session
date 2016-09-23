@@ -2,16 +2,19 @@
 class RedisJsonSessionHandler implements SessionHandlerInterface{
     const DEFAULT_REDIS_HOST = '127.0.0.1';
     const DEFAULT_REDIS_PORT = 6379;
+    const DEFAULT_DB_ADAPTER_CLASS = 'Redis';
     
     protected $redis; //instance Redis connection
     protected $redisConnectionParams = null; //associative array with string $host and optional int $port
+    protected $dbAdapterClass; //classname is dynamic for testing purposes
 
-    function __construct(string $host=null, int $port=null){
+    function __construct(string $host=null, int $port=null, string $dbAdapterClass=null){
         $this->redisConnectionParams = self::bundleConnectionParams($host, $port);
+        $this->dbAdapterClass = !is_null($dbAdapterClass) ? $dbAdapterClass : self::DEFAULT_DB_ADAPTER_CLASS;
     }
 
     /***********************************************************
-    * Getters and Setters
+    * Getters and Setters (used for testing)
     ************************************************************/
     public function getRedisConnectionParams() : array{
         return $this->redisConnectionParams;
@@ -58,18 +61,18 @@ class RedisJsonSessionHandler implements SessionHandlerInterface{
         }
     }
 
-    public static function getRedisConnection(array $connectionParams){
-        $redis = new Redis();
+    public static function getDbConnection(array $connectionParams, string $dbAdapterClass){
+        $db = new $dbAdapterClass();
         if(!array_key_exists('host', $connectionParams)){
-            throw new BadMethodCallException(get_called_class().' host not given for Redis connection');
+            throw new BadMethodCallException(get_called_class().' host not given for '.$dbAdapterClass.' connection');
         }
         if(array_key_exists('port', $connectionParams)){
-            $redis->connect($connectionParams['host'], $connectionParams['port']);
+            $db->connect($connectionParams['host'], $connectionParams['port']);
         }
         else{
-            $redis->connect($connectionParams['host']);
+            $db->connect($connectionParams['host']);
         }
-        return $redis;
+        return $db;
     }
 
     /***********************************************************
@@ -134,7 +137,7 @@ class RedisJsonSessionHandler implements SessionHandlerInterface{
         if(is_null($this->redisConnectionParams)){
             $this->redisConnectionParams = self::extractConnectionParamsFromSavePath($savePath);
         }
-        $this->redis = self::getRedisConnection($this->redisConnectionParams);
+        $this->redis = self::getDbConnection($this->redisConnectionParams, $this->dbAdapterClass);
         return true;
     }
 
