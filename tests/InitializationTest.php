@@ -1,5 +1,26 @@
 <?php
 
+
+class MockRedisAdapter{
+	public function get(){
+
+	}
+	public function connect(){
+
+	}
+	public function close(){
+
+	}
+	public function delete(){
+
+	}
+
+	public function setEx(){
+
+	}
+}
+
+
 use PHPUnit\Framework\TestCase;
 
 class InitializationTest extends TestCase{
@@ -15,7 +36,7 @@ class InitializationTest extends TestCase{
      * @expectedException BadMethodCallException
      */
 	public function testInvalidConnectionParams(){
-		$redis = RedisJsonSessionHandler::getRedisConnection(['port'=> 6379]);
+		$redis = RedisJsonSessionHandler::getDbConnection(['port'=> 6379], 'MockRedisAdapter');
 	}
 
 	public function testTCPConnectionParamsConstructorParsing1(){
