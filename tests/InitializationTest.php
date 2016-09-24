@@ -87,6 +87,20 @@ class InitializationTest extends TestCase{
 		$this->assertEquals($expectedParams, $connectionParams);
 	}
 
+	public function testConstructorConectionOverridesSavePath(){
+		$handler = new RedisJsonSessionHandler('tcp://196.0.0.1', 1234, 'MockRedisAdapter');
+		$savePath = 'unix:///var/run/redis/redis.sock';
+		$handler->open($savePath, '');
+		$this->assertEquals(['host' => 'tcp://196.0.0.1', 'port' => 1234], $handler->getRedisConnectionParams());
+	}
+
+	public function testGetConnectionParamsFromSavePath(){
+		$handler = new RedisJsonSessionHandler(null, null, 'MockRedisAdapter');
+		$savePath = 'unix:///var/run/redis/redis.sock';
+		$handler->open($savePath, '');
+		$this->assertEquals(['host' => 'unix:///var/run/redis/redis.sock'], $handler->getRedisConnectionParams());
+	}
+
 
 
 }
