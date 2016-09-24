@@ -7,8 +7,12 @@ class RedisJsonSessionHandler implements SessionHandlerInterface{
     protected $redis; //instance Redis connection
     protected $redisConnectionParams = null; //associative array with string $host and optional int $port
     protected $dbAdapterClass; //classname is dynamic for testing purposes
+    protected $isConnectionParamsInitialized = true; //saves if connection params are initialized by constructor
 
     function __construct(string $host=null, int $port=null, string $dbAdapterClass=null){
+        if(is_null($host)){
+            $this->isConnectionParamsInitialized = false;
+        }
         $this->redisConnectionParams = self::bundleConnectionParams($host, $port);
         $this->dbAdapterClass = !is_null($dbAdapterClass) ? $dbAdapterClass : self::DEFAULT_DB_ADAPTER_CLASS;
     }
@@ -134,7 +138,7 @@ class RedisJsonSessionHandler implements SessionHandlerInterface{
 
     public function open($savePath, $sessionName){
         //check to see if connection params overridden by constructor
-        if(is_null($this->redisConnectionParams)){
+        if(!$this->isConnectionParamsInitialized || is_null($this->redisConnectionParams)){
             $this->redisConnectionParams = self::extractConnectionParamsFromSavePath($savePath);
         }
         $this->redis = self::getDbConnection($this->redisConnectionParams, $this->dbAdapterClass);
