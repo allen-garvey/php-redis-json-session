@@ -18,7 +18,7 @@ Save your PHP sessions in Redis formatted as JSON, so that you can share your se
 
 ## Running Tests
 
-Assuming phpunit is installed and in your `PATH`, you can run tests by making `run_tests.bash` executable by typing `chmod +x run_tests.bash` and running tests by typing `./run_tests.bash`.
+Assuming phpunit is installed and in your `PATH`, you can run tests by making `run_tests.bash` executable by typing `chmod u+x run_tests.bash` and running tests by typing `./run_tests.bash`.
 
 ## Caveats
 
