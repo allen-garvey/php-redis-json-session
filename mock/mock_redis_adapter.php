@@ -1,6 +1,8 @@
 <?php 
 
 class MockRedisAdapter{
+	public $closeCalled = 0;
+
 	public function get(){
 
 	}
@@ -8,8 +10,9 @@ class MockRedisAdapter{
 
 	}
 	public function close(){
-
+		$this->closeCalled++;
 	}
+	
 	public function delete(){
 
 	}
