@@ -5,7 +5,7 @@ Save your PHP sessions in Redis formatted as JSON, so that you can share your se
 
 ## Dependencies
 
-* PHP 7.0
+* PHP >= 7.0
 * Redis
 * [PHP Redis extension](https://github.com/phpredis/phpredis)
 * php.ini value `session.serialize_handler` must be `php` (this is the default)
@@ -13,7 +13,7 @@ Save your PHP sessions in Redis formatted as JSON, so that you can share your se
 
 ## Getting Started
 
-* See `example.php` for an example of how to setup the handler
+* See `docs/example.php` for an example of how to setup the handler
 * php.ini value `session.gc_maxlifetime` is used to set session key expiration dates in Redis
 
 ## Running Tests
